@@ -45,7 +45,7 @@ def transmission_matrix_palette():
             plt.colorbar()
 
     plt.tight_layout()
-    plt.savefig("pictures/transmission-matrix.pdf")
+    # plt.savefig("pictures/transmission-matrix.pdf")
     plt.show()
 
     return

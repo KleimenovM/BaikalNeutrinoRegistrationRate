@@ -46,7 +46,7 @@ class Source:
         """
         print(f"{self.name}, declination: {self.delta}")
         print(f"k0 = {self.k0} GeV-1 s-1 m-2, gamma = {self.gamma}")
-        if self.e_cut is not None and self.beta is not None:
+        if not np.isnan(self.e_cut) and not np.isnan(self.beta):
             print(f"e_cut: {self.e_cut} GeV, beta: {self.beta}")
         pass
 

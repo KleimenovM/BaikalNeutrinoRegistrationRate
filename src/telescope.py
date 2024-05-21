@@ -7,7 +7,7 @@ import os
 from scipy.interpolate import RegularGridInterpolator
 
 from src.source import Source
-from src.tools import sph_coord, rot_matrix
+from src.tools import sph_coord, rot_matrix, deg_to_rad
 
 
 class Telescope:
@@ -56,7 +56,7 @@ class Telescope:
         vec = sph_coord(r=1, theta=s_delta, phi=psi)
         rm = rot_matrix(self.phi)
         vec = rm.dot(vec)
-        theta = np.arcsin(vec[2])
+        theta = np.arccos(vec[2])
         return vec, theta, psi
 
     def source_available_time(self, source: Source):
@@ -132,7 +132,7 @@ class RootTelescopeConstructor:
         lines = file.readlines()
 
         self.name = lines[0].strip()
-        self.latitude = [int(v) for v in lines[1].strip().split(',')]
+        self.latitude = deg_to_rad([int(v) for v in lines[1].strip().split(',')])
 
         for line in lines[3:]:
             line = line.strip().split('\t')
