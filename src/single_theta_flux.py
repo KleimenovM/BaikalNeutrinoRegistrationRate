@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.interpolate import interp1d
 
-from tools import smart_division
-from telescope import Telescope
-from transmission_function import TransmissionFunction
+from src.tools import smart_division
+from src.telescope import Telescope
+from src.transmission_function import TransmissionFunction
 
 
 class SingleThetaFlux:
@@ -109,7 +109,7 @@ class SingleThetaFlux:
         relative_spectrum = total_relative_spectrum_function(energy)
 
         # 3.2. Multiplication with effective area
-        effective_area = self.telescope.effective_area(np.cos(self.zenith_angle), lg_energy).T[0]
+        effective_area = self.telescope.effective_area(np.cos(self.zenith_angle), lg_energy)
 
         return relative_spectrum * effective_area
 
