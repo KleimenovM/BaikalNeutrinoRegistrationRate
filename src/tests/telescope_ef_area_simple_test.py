@@ -1,20 +1,22 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.telescope import RootTelescopeConstructor, Telescope
+from src.telescope import RootTelescopeConstructor
 
 
 def check_ef_area():
 
-    baikal: Telescope = RootTelescopeConstructor("baikal_bdt_mk", "hnu_stdcuts").get()
+    baikal = RootTelescopeConstructor("baikal_2021", "hnu").get()
 
     lg_energy_range = baikal.lg_energy
     energy_range = baikal.energy
 
-    a = 2*np.pi/3
+    a = np.cos(2*np.pi/3 + 0.5)
 
-    xv = np.array(np.meshgrid(a, lg_energy_range, indexing='ij')).T
-    f_xv = baikal.ef_area(xv).T[0]
+    print(baikal.brd_cosine)
+    print(a)
+
+    f_xv = baikal.effective_area(a, lg_energy_range)
 
     plt.scatter(energy_range, f_xv)
     plt.xscale('log')
