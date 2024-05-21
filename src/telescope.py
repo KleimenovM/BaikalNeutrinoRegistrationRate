@@ -90,7 +90,8 @@ class Telescope:
 
         xy = (zenith_cosine_parametrization, self.lg_energy)
 
-        self.ef_area = RegularGridInterpolator(xy, np.log10(ef_area_parametrization + 1e-30), method='linear')
+        self.ef_area = RegularGridInterpolator(xy, np.log10(ef_area_parametrization + 1e-30), method='linear',
+                                               bounds_error=False, fill_value=-30.0)
         return
 
     def complex_effective_area(self):
@@ -103,7 +104,7 @@ class Telescope:
         xy = (self.cosines, self.lg_energy)
 
         self.ef_area = RegularGridInterpolator(xy, np.log10(self.ef_area_table + 1e-30), method='linear',
-                                               bounds_error=False, fill_value=0.0)
+                                               bounds_error=False, fill_value=-30.0)
         return
 
     def effective_area(self, cosine, energy):
