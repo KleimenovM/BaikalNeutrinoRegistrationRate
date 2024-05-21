@@ -1,13 +1,13 @@
 # Neutrino through Earth propagation
 # Telescope class description
 import numpy as np
+
 import ROOT as rt
 import os
-from scipy.interpolate import RegularGridInterpolator as interp2d
-from scipy.interpolate import interp1d
+from scipy.interpolate import RegularGridInterpolator
 
 from src.source import Source
-from src.tools import deg_to_rad, sph_coord, rot_matrix
+from src.tools import sph_coord, rot_matrix
 
 
 class Telescope:
@@ -15,29 +15,31 @@ class Telescope:
     This class describes a typical neutrino telescope
     """
 
-    def __init__(self, name: str, latitude: float, ef_area_table: np.ndarray, brd_angle=None, angles=None):
+    def __init__(self, name: str, latitude: float,
+                 lg_energy: np.ndarray, ef_area_table: np.ndarray, brd_angle_cosine=None, cosines=None):
         """
         Set a telescope
-        :param name: (str) telescope title
-        :param latitude: (float) telescope latitude, rad
-        :param ef_area_table: (np.ndarray) effective area table
-        :param brd_angle: optional, (float) border visibility height (90° - zenith angle)
-        :param angles: (list) zenith angles grid for effective area
+        :param name:                (str) telescope title
+        :param latitude:            (float) telescope latitude, rad
+        :param lg_energy:           (np.ndarray) lg energy table
+        :param ef_area_table:       (np.ndarray) effective area table
+        :param brd_angle_cosine:    *optional*, (float) border visibility height cos(90° - zenith angle)
+        :param cosines:              (list) zenith angles grid for effective area
         """
         self.name = name
         self.phi = latitude
         self.ef_area_table = ef_area_table
-        self.lg_energy = None
-        self.energy = None
+        self.lg_energy = lg_energy
+        self.energy = 10**self.lg_energy
         self.ef_area = None
-        self.angles = angles
+        self.cosines = cosines
 
-        if brd_angle is None:
-            self.brd_angle = 0.0
+        if brd_angle_cosine is None:
+            self.brd_cosine = 0.0  # z_brd = pi/2
         else:
-            self.brd_angle = brd_angle
+            self.brd_cosine = brd_angle_cosine
 
-        if self.angles:
+        if self.cosines:
             self.complex_effective_area()
         else:
             self.simple_effective_area()
@@ -67,56 +69,46 @@ class Telescope:
         vec, theta, psi = self.get_orbit_parametrization(s_delta=source.delta,
                                                          s_alpha=source.ra,
                                                          angular_precision=m)
-        theta_good = theta < -self.brd_angle
+        theta_good = theta > self.brd_cosine
         return np.sum(theta_good) / m
 
-    def simple_effective_area(self, angle_precision: int = 180):
+    def simple_effective_area(self, angular_precision: int = 180):
         """
         Set only energy-dependent effective area 
-        :param angle_precision: (int) number of formal zenith angle splits for interpolation 
-        :return: 
+        :param angular_precision: (int) number of formal zenith angle splits for interpolation
+        :return: an effective area function (cosine, lg_energy) -> lg_ef_area
         """
-        self.lg_energy = self.ef_area_table[0]  # + self.ef_area_table[1] / 2  # middle of the bin
-        self.energy = 10 ** self.lg_energy
-        value = self.ef_area_table[2]  # ef_area value
+        value = self.ef_area_table  # ef_area value
 
-        zenith_parametrization = np.linspace(-np.pi / 2, np.pi / 2, angle_precision)
-        ef_area_parametrization = np.zeros([angle_precision, value.size])
+        zenith_cosine_parametrization = np.linspace(-1, 1, angular_precision)
+        ef_area_parametrization = np.zeros([angular_precision, value.size])
 
-        # simple method: if zenith angle < border angle, ef. area = 0
-        border_angle = self.brd_angle  # typically 0.0
-
-        for i, z in enumerate(zenith_parametrization):
-            if z > border_angle:
+        # simple method: if zenith angle cosine < border cosine, ef. area = 0
+        for i, z_cos in enumerate(zenith_cosine_parametrization):
+            if z_cos < self.brd_cosine:
                 ef_area_parametrization[i] = value
 
-        xy = (zenith_parametrization, self.lg_energy)
+        xy = (zenith_cosine_parametrization, self.lg_energy)
 
-        self.ef_area = interp2d(xy, ef_area_parametrization, method='linear')
+        self.ef_area = RegularGridInterpolator(xy, np.log10(ef_area_parametrization + 1e-30), method='linear')
         return
 
     def complex_effective_area(self):
         """
         Set energy and zenith-angle dependent effective area
-        :return: 
+        :return: an effective area function (cos(z), lg(e)) -> lg(ef_area)
         """
-        self.lg_energy = self.ef_area_table[0]
-        self.energy = 10 ** self.lg_energy
-        self.angles = np.array(self.angles)
+        self.cosines = np.array(self.cosines)
 
-        angle_energy_data = self.ef_area_table[2:]
+        xy = (self.cosines, self.lg_energy)
 
-        n, m = self.energy.size, self.angles.size
-        above_angles = np.linspace(0, np.pi/2, m)
-        above_values = np.zeros([m, self.energy.size])
-
-        mod_angles = np.hstack([above_angles, self.angles])
-        mod_values = np.vstack([above_values, angle_energy_data])
-
-        xy = (mod_angles, self.lg_energy)
-
-        self.ef_area = interp2d(xy, mod_values + 1e-15, method='linear')
+        self.ef_area = RegularGridInterpolator(xy, np.log10(self.ef_area_table + 1e-30), method='linear',
+                                               bounds_error=False, fill_value=0.0)
         return
+
+    def effective_area(self, cosine, energy):
+        xv = np.array(np.meshgrid(cosine, energy, indexing='ij')).T
+        return 10 ** self.ef_area(xv).T
 
 
 class RootTelescopeConstructor:
@@ -130,7 +122,7 @@ class RootTelescopeConstructor:
 
         self.name: str = ""
         self.latitude: float = 0.0
-        self.angles: list[float] = []
+        self.cosines: list[float] = []
         self.filenames: list[str] = []
 
         self.simple = self.analyze_info()
@@ -144,10 +136,10 @@ class RootTelescopeConstructor:
 
         for line in lines[3:]:
             line = line.strip().split('\t')
-            self.angles.append(np.arccos(float(line[0])))
+            self.cosines.append(float(line[0]))
             self.filenames.append(line[1])
 
-        if len(self.angles) == 1:
+        if len(self.cosines) == 1:
             return True
         return False
 
@@ -157,19 +149,21 @@ class RootTelescopeConstructor:
         n = len(hist)
 
         # low_end, width, value
-        data: np.ndarray = np.zeros([3, n])
+        lg_energy: np.ndarray = np.zeros(n)
+        data: np.ndarray = np.zeros(n)
 
         for i in range(n):
-            data[0, i] = hist.GetBinLowEdge(i)  # low level
-            data[1, i] = hist.GetBinWidth(i)  # bin width
-            data[2, i] = hist.GetBinContent(i)  # bin average value
+            lg_energy[i] = hist.GetBinLowEdge(i) + 1/2 * hist.GetBinWidth(i)  # middle of the bin
+            data[i] = hist.GetBinContent(i)  # bin average value
 
         return Telescope(name=self.name,
                          latitude=self.latitude,
+                         lg_energy=lg_energy,
                          ef_area_table=data,
-                         brd_angle=self.angles[0])
+                         brd_angle_cosine=self.cosines[0])
 
     def get_complex_telescope(self) -> Telescope:
+        lg_energy = []
         data = []
 
         for i, filename in enumerate(self.filenames):
@@ -177,28 +171,40 @@ class RootTelescopeConstructor:
             hist = file.Get(self.hist_name)
             n = len(hist)
 
-            data_i = np.zeros(n)
-
             if i == 0:
-                e_i = np.zeros([2, n])
-                for j in range(n):
-                    e_i[0, j] = hist.GetBinLowEdge(j)
-                    e_i[1, j] = hist.GetBinWidth(j)
+                e_i = np.zeros(n-1)
+                for j in range(n-1):
+                    e_i[j] = hist.GetBinLowEdge(j) + 1/2 * hist.GetBinWidth(j)
 
-                data.append(e_i[0])
-                data.append(e_i[1])
+                lg_energy = e_i
 
-            for j in range(n):
+            data_i = np.zeros(n-1)
+            for j in range(n-1):
                 data_i[j] = hist.GetBinContent(j)  # bin average value
 
             data.append(data_i)
 
         data = np.array(data)
 
+        # changing data for appropriate interpolation
+        m = len(self.cosines)
+        n = len(lg_energy)
+        new_cosines = np.zeros(m+1)
+        new_data = np.zeros([m+1, n])
+
+        cos_half_width = (self.cosines[1] - self.cosines[0]) / 2
+        new_cosines[0] = self.cosines[0] - cos_half_width
+        new_cosines[1:] = np.array(self.cosines) + cos_half_width
+
+        new_data[0, :] = (3 * data[0, :] + data[1, :]) / 4
+        new_data[1:-1, :] = (data[:-1, :] + data[1:, :]) / 2
+        new_data[-1, :] = (data[-2, :] + 3 * data[-1, :]) / 4
+
         return Telescope(name=self.name,
                          latitude=self.latitude,
-                         ef_area_table=data,
-                         angles=self.angles)
+                         lg_energy=lg_energy,
+                         ef_area_table=new_data,
+                         cosines=new_cosines.tolist())
 
     def get(self):
         if self.simple:
