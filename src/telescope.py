@@ -154,7 +154,7 @@ class RootTelescopeConstructor:
         data: np.ndarray = np.zeros(n)
 
         for i in range(n):
-            lg_energy[i] = hist.GetBinLowEdge(i) + 1/2 * hist.GetBinWidth(i)  # middle of the bin
+            lg_energy[i] = hist.GetBinCenter(i)  # middle of the bin
             data[i] = hist.GetBinContent(i)  # bin average value
 
         return Telescope(name=self.name,
@@ -175,7 +175,7 @@ class RootTelescopeConstructor:
             if i == 0:
                 e_i = np.zeros(n-1)
                 for j in range(n-1):
-                    e_i[j] = hist.GetBinLowEdge(j) + 1/2 * hist.GetBinWidth(j)
+                    e_i[j] = hist.GetBinCenter(j)
 
                 lg_energy = e_i
 
