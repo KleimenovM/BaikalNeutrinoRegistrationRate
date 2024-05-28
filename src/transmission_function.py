@@ -41,7 +41,7 @@ class TransmissionFunction:
 
         transmission_table = self.table_data
 
-        j = self.angles[angle > self.angles].size - 1
+        j = self.angles[angle >= self.angles].size - 1
         t = (angle - self.angles[j]) / (self.angles[j + 1] - self.angles[j])
 
         transmission_matrix = transmission_table[j] * (1 - t) + transmission_table[j + 1] * t

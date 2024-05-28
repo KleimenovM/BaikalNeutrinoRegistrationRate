@@ -147,12 +147,10 @@ def main(if_sum: bool = False,
         source_numbers = [x for x in range(12)]
     sources = get_sources("src/data/source_table.csv")
 
-    ef_area_folder = "data/eff_area_bdt_mk"
-
     # zenith-angle-dependent version
-    baikal_trigger = RootTelescopeConstructor("baikal_bdt_mk", "hnu_trigger").get()
-    baikal_reco = RootTelescopeConstructor("baikal_bdt_mk", "hnu_reco").get()
-    baikal_std_cuts = RootTelescopeConstructor("baikal_bdt_mk", "hnu_stdcuts").get()
+    baikal_trigger = RootTelescopeConstructor("baikal_bdt_mk_simp", "hnu_trigger").get()
+    baikal_reco = RootTelescopeConstructor("baikal_bdt_mk_simp", "hnu_reco").get()
+    baikal_std_cuts = RootTelescopeConstructor("baikal_bdt_mk_simp", "hnu_stdcuts").get()
 
     # background_model
     ac = Atmosphere()

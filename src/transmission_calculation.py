@@ -1,17 +1,18 @@
 # Earth Transmission Function (ETF) calculation
 # Allowed energies from 10^3 to 10^10 GeV
 # This file creates a data.npy file which contains points of the ETF
+import os
 
 # Attention! It takes several minutes to execute this file!
 
 import numpy as np
 import ROOT as rt
 
-from nuFATE.cascade import get_eigs as get_eigs1
-from nuFATE.cascade_secs import get_eigs as get_eigs2
-import nuFATE.earth as earth
+from src.nuFATE.cascade import get_eigs as get_eigs1
+from src.nuFATE.cascade_secs import get_eigs as get_eigs2
+import src.nuFATE.earth as earth
 
-from tools import extrapolating_spline
+from src.tools import extrapolating_spline
 
 # Avogadro's number
 N_A = 6.0221415e23
@@ -32,6 +33,8 @@ class TransmissionCalculator:
         self.hist_names = ["no_secs", "emu_secs", "tau_secs"]
         self.nuFate_method = nuFateMethod
         self.flavor = flavor
+
+        self.nuFate_hdf5_path = os.path.dirname(__file__) + "/nuFATE/NuFATECrossSections.h5"
         return
 
     def set_delta_function(self, e):
@@ -109,17 +112,17 @@ class TransmissionCalculator:
 
     def get_eigs(self, gamma, pure_spectrum: bool = True):
         if self.nuFate_method == 0:
-            return get_eigs1(self.flavor, gamma, "nuFATE/NuFATECrossSections.h5", pure_spectrum=True)
+            return get_eigs1(self.flavor, gamma, self.nuFate_hdf5_path, pure_spectrum=True)
 
-        return get_eigs2(self.flavor, gamma, "nuFATE/NuFATECrossSections.h5", pure_spectrum=True)
+        return get_eigs2(self.flavor, gamma, self.nuFate_hdf5_path, pure_spectrum=True)
 
     def get_att_values(self, w, v, ci, energy_nodes, zenith, phi_in):
         if self.nuFate_method == 0:
             return self.get_att_value_no_secs(w, v, ci, energy_nodes, zenith, self.energy, phi_in, True)
         if self.nuFate_method == 1:
-            return self.get_att_value_secs(w, v, ci, energy_nodes, zenith, self.energy, phi_in, True, True)
-        if self.nuFate_method == 2:
             return self.get_att_value_secs(w, v, ci, energy_nodes, zenith, self.energy, phi_in, False, True)
+        if self.nuFate_method == 2:
+            return self.get_att_value_secs(w, v, ci, energy_nodes, zenith, self.energy, phi_in, True, True)
         else:
             return .0
 
