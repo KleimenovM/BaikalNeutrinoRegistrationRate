@@ -147,12 +147,8 @@ def main(if_sum: bool = False,
         source_numbers = [x for x in range(12)]
     sources = get_sources("src/data/source_table.csv")
 
-    telescope_name = "baikal_2023_new"
-
-    # zenith-angle-dependent version
-    baikal_trigger = RootTelescopeConstructor(telescope_name, "hnu_trigger").get()
-    baikal_reco = RootTelescopeConstructor(telescope_name, "hnu_reco").get()
-    baikal_std_cuts = RootTelescopeConstructor(telescope_name, "hnu_stdcuts").get()
+    baikal_trigger = RootTelescopeConstructor("baikal_2023_new", "hnu_trigger").get()
+    km3net_trigger = RootTelescopeConstructor("km3net_2019_trigger", "hnu_trigger").get()
 
     # background_model
     ac = Atmosphere()
@@ -161,7 +157,8 @@ def main(if_sum: bool = False,
     tf = TransmissionFunction(nuFate_method=1)
 
     # number of clusters & time
-    value_t, value_r, value_c = 20 * 5, 20 * 5, 20 * 5
+    value_t = 20 * 5
+    value_k = 1 * 5
 
     # border energy
     lg_e_brd = 0  # GeV
@@ -176,15 +173,12 @@ def main(if_sum: bool = False,
         r_t, r_t_bg = get_signal_and_background(source=source, tf=tf, atm=ac, telescope=baikal_trigger,
                                                 angular_resolution=1, value=value_t, lg_e_brd=lg_e_brd,
                                                 rnd=2, if_sum=if_sum)
-        r_r, r_r_bg = get_signal_and_background(source=source, tf=tf, atm=ac, telescope=baikal_reco,
-                                                angular_resolution=1, value=value_r, lg_e_brd=lg_e_brd,
+        k_t, k_t_bg = get_signal_and_background(source=source, tf=tf, atm=ac, telescope=km3net_trigger,
+                                                angular_resolution=1, value=value_k, lg_e_brd=lg_e_brd,
                                                 rnd=2, if_sum=if_sum)
-        r_c, r_c_bg = get_signal_and_background(source=source, tf=tf, atm=ac, telescope=baikal_std_cuts,
-                                                angular_resolution=1, value=value_c, lg_e_brd=lg_e_brd,
-                                                rnd=4, if_sum=if_sum)
 
         # just print the total registration rates
-        print(f'{source.name} & {r_t} & {r_t_bg} & {r_r} & {r_r_bg} & {r_c} & {r_c_bg}' + r' \\')
+        print(f'{source.name} & {r_t} & {k_t}' + r' \\')
 
     return
 

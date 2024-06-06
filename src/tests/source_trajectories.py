@@ -102,7 +102,7 @@ if __name__ == '__main__':
         s_i.info()
 
         vec1, theta1 = t.get_orbit_parametrization(s_delta=s_i.delta,
-                                                   s_alpha=s_i.ra,
+                                                   s_alpha=0.0,
                                                    angular_precision=90)[:2]
 
         name = s_i.name

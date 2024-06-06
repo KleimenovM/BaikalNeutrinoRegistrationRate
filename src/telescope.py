@@ -107,8 +107,8 @@ class Telescope:
                                                bounds_error=False, fill_value=-30.0)
         return
 
-    def effective_area(self, cosine, energy):
-        xv = np.array(np.meshgrid(cosine, energy, indexing='ij')).T
+    def effective_area(self, cosine, lg_energy):
+        xv = np.array(np.meshgrid(cosine, lg_energy, indexing='ij')).T
         return 10 ** self.ef_area(xv).T
 
 

@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 # from source_extended import ExtendedSource, galactic_center
 from src.source import get_sources
+from src.source_extended import ExtendedSource, galactic_center
 from src.tools import rad_to_hours, hours_to_rad, galactic2equatorial
 
 
@@ -210,7 +211,7 @@ def draw_hammer_aitoff_ext():
 
     plot_grid()
     plot_galactic_plane(legend=True)
-    # plot_galactic_center()
+    plot_galactic_center()
 
     sources = get_sources("../data/source_table.csv")
     plot_the_sources(sources)

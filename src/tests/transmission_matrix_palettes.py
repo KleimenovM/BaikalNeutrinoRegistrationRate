@@ -46,6 +46,7 @@ def transmission_matrix_palette():
 
     plt.tight_layout()
     # plt.savefig("pictures/transmission-matrix.pdf")
+    plt.savefig("pictures/transmission-matrix-palettes.png")
     plt.show()
 
     return

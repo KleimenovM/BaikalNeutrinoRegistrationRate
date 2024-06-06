@@ -8,7 +8,7 @@ from src.transmission_function import TransmissionFunction
 def plot_transmission_graph(gamma=2):
     tf = TransmissionFunction(nuFate_method=1)
 
-    angles = np.linspace(np.pi/2, np.pi, 180)
+    angles = np.linspace(np.pi/2, np.pi-1e-3, 180)
     e = tf.energy
 
     flux = e ** (-gamma)

@@ -52,16 +52,18 @@ def organize_sources(num_pts, random: bool = True, if_plot: bool = False):
 
 
 def full_sky():
-    n_s = 30
+    n_s = 5000
     angular_resolution = (4 / n_s) ** 0.5 * 180 / np.pi
-    sources = organize_sources(n_s, random=False)
+    sources = organize_sources(n_s, random=True)
 
-    ef_area_folder = "data/eff_area_new"
+    telescope_name = "baikal_bdt_mk"
+    telescope_2_name = "baikal_2023_new"
 
     # zenith-angle-dependent version
-    baikal_trigger = RootTelescopeConstructor("baikal_bdt_mk", "hnu_trigger").get()
-    baikal_reco = RootTelescopeConstructor("baikal_bdt_mk", "hnu_reco").get()
-    baikal_std_cuts = RootTelescopeConstructor("baikal_bdt_mk", "hnu_stdcuts").get()
+    baikal_trigger = RootTelescopeConstructor(telescope_name, "hnu_trigger").get()
+    baikal_reco = RootTelescopeConstructor(telescope_name, "hnu_reco").get()
+    baikal_std_cuts2 = RootTelescopeConstructor(telescope_2_name, "hnu_stdcuts").get()
+    baikal_std_cuts = RootTelescopeConstructor(telescope_name, "hnu_stdcuts").get()
 
     atm = Atmosphere()
 
@@ -70,22 +72,29 @@ def full_sky():
 
     value_t, value_r, value_c = 1, 1, 1
 
-    t_res, r_res, c_res = .0, .0, .0
+    t_res, r_res, c_res, c1_res = .0, .0, .0, .0
 
     for i_s, s in enumerate(sources):
-        if i_s % 10 == 0:
+        if i_s % 1000 == 0:
             print(i_s)
 
         t_res += np.sum(one_telescope_background_cycle(source=s, tf=tf, telescope=baikal_trigger,
-                                                       atm=atm, angular_resolution=angular_resolution) * value_t)
+                                                       atm=atm, angular_resolution=angular_resolution,
+                                                       angular_precision=2) * value_t)
 
         r_res += np.sum(one_telescope_background_cycle(source=s, tf=tf, telescope=baikal_reco,
-                                                       atm=atm, angular_resolution=angular_resolution) * value_r)
+                                                       atm=atm, angular_resolution=angular_resolution,
+                                                       angular_precision=2) * value_r)
+
+        c1_res += np.sum(one_telescope_background_cycle(source=s, tf=tf, telescope=baikal_std_cuts2,
+                                                        atm=atm, angular_resolution=angular_resolution,
+                                                        angular_precision=2) * value_c)
 
         c_res += np.sum(one_telescope_background_cycle(source=s, tf=tf, telescope=baikal_std_cuts,
-                                                       atm=atm, angular_resolution=angular_resolution) * value_c)
+                                                       atm=atm, angular_resolution=angular_resolution,
+                                                       angular_precision=2) * value_c)
 
-    print(t_res, r_res, c_res)
+    print(t_res, r_res, c1_res, c_res)
 
     return
 
