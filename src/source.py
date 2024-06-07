@@ -50,7 +50,7 @@ class Source:
             print(f"e_cut: {self.e_cut} GeV, beta: {self.beta}")
         pass
 
-    def flux_on_energy_function(self, energy):
+    def flux_on_energy_function(self, energy, *args):
         """
         Get the standard flux (in GeV-1 cm-2 s-1) for the source
         :param energy: (float or np.ndarray) - input energy, GeV
