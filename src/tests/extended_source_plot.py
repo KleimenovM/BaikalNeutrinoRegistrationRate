@@ -38,17 +38,20 @@ def extended_source_plot(if_bg: bool = False,
 
     rtp = RootPlotter(title=source.name, if_bg=if_bg)
 
+    basic_line = "Baikal-GVD MC, 20 clusters, 5 yr"
+
     if if_bg:
-        rtp.add_hist(baikal_trigger.energy, r_t, "Baikal-GVD, 20 cl, 5 yr, trigger", "trig")
         rtp.add_hist(baikal_trigger.energy, r_t_bg, "", "trig(BG)")
-        rtp.add_hist(baikal_reco.energy, r_r, "Baikal-GVD, 20 cl, 5 yr, reco", "reco")
+        rtp.add_hist(baikal_trigger.energy, r_t, basic_line + ", trigger", "trig")
         rtp.add_hist(baikal_reco.energy, r_r_bg, "", "reco(BG)")
-        rtp.add_hist(baikal_std_cuts.energy, r_c, "Baikal-GVD, 20 cl, 5 yr, cuts", "cuts")
+        rtp.add_hist(baikal_reco.energy, r_r, basic_line + ", reco", "reco")
         rtp.add_hist(baikal_std_cuts.energy, r_c_bg, "", "cuts(BG)")
+        rtp.add_hist(baikal_std_cuts.energy, r_c, basic_line + ", cuts", "cuts")
+
     else:
-        rtp.add_hist(baikal_trigger.energy, r_t, "Baikal-GVD, 20 cl, 5 yr, trigger", "trig")
-        rtp.add_hist(baikal_reco.energy, r_r, "Baikal-GVD, 20 cl, 5 yr, reco", "reco")
-        rtp.add_hist(baikal_std_cuts.energy, r_c, "Baikal-GVD, 20 cl, 5 yr, cuts", "cuts")
+        rtp.add_hist(baikal_trigger.energy, r_t, basic_line + ", trigger", "trig")
+        rtp.add_hist(baikal_reco.energy, r_r, basic_line + ", reco", "reco")
+        rtp.add_hist(baikal_std_cuts.energy, r_c, basic_line + ", cuts", "cuts")
 
     rtp.draw()
     input("To finish enter any symbol: ")

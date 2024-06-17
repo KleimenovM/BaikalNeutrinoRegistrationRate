@@ -136,7 +136,7 @@ def galactic_center(num=100):
     def galactic_spectrum_function(e, *args):
         return k0_val * (e / 1000) ** (-gamma_val)
 
-    return ExtendedSource(name='Galactic Center',
+    return ExtendedSource(name='Galactic ridge',
                           center_longitude=ll, center_latitude=b,
                           spectrum_function=galactic_spectrum_function,
                           longitude_loc=l_loc, latitude_loc=b_loc,

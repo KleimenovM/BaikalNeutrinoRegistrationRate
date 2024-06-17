@@ -15,7 +15,7 @@ def test_atmosphere():
     color_values[:, 1] = np.linspace(0.0, 0.5, m)
     color_values[:, 2] = np.linspace(0.0, 0.5, m)
 
-    plt.figure(figsize=(8, 6))
+    plt.figure(figsize=(9, 5))
     deg = 3
     for i, c in enumerate(cosines):
         plt.plot(10 ** lg_e, 10 ** ac.rbc.ev(c, lg_e) * (10 ** lg_e) ** deg / 1e4,
@@ -36,7 +36,8 @@ def test_atmosphere():
     plt.legend(fontsize=14)
 
     plt.tight_layout()
-    # plt.savefig("results/atm_flux.png")
+    plt.savefig("pictures/atm_flux.png")
+    plt.savefig("pictures/atm_flux.pdf")
     plt.show()
     print(f"Error: {np.round(100 * ac.estimate_error(), 1)} %")
 

@@ -35,6 +35,8 @@ class RootPlotter:
         self.canvas.SetBottomMargin(.13 + .03 * self.if_narrow)
         self.canvas.SetRightMargin(.05)
         self.canvas.SetLogx()
+        if self.if_bg:
+            self.canvas.SetLogy()
         rt.gStyle.SetTitleAlign(11)
         rt.gStyle.SetTitleX(.99)
         rt.gStyle.SetOptStat(0)
@@ -52,7 +54,9 @@ class RootPlotter:
         :return: (rt.TH1F) -- root histogram
         """
         if x0 is None:
-            x0 = x
+            lg_x = np.log10(x)
+            d_lg_x = lg_x[1] - lg_x[0]
+            x0 = 10**(lg_x + 1/2 * d_lg_x)
 
         m = x0.size
 
@@ -136,11 +140,15 @@ class RootPlotter:
             if not self.if_narrow:
                 text = self.add_text(self.fs, align_left=True)
                 text.SetTextColor(self.colors[i])
-                text.DrawLatexNDC(.3, .955 - .050 * i * (1 - 0.5 * self.if_bg), self.names[i])
+                text.DrawLatexNDC(.3, .985 - .050 * i * (1 - 0.5 * self.if_bg), self.names[i])
 
         text = self.add_text(self.fs + 2, align_left=False)
         text.DrawLatexNDC(.15, .95, self.title)
         self.canvas.Update()
-        input()
+        input("Enter any symbol to exit ")
         return
+
+
+if __name__ == '__main__':
+    print("Not for direct use")
 

@@ -121,11 +121,11 @@ class PointSourceFlux:
 
     def signal(self):
         signal = self.bpf.get_signal()
-        return signal * self.year_seconds * self.value
+        return signal * self.year_seconds * self.value * self.lg_e_border
 
     def background(self):
         bg = self.bpf.get_background()
-        return bg * self.year_seconds * self.value
+        return bg * self.year_seconds * self.value * self.lg_e_border
 
     def total_signal(self, rnd: int = 2):
         return np.round(np.sum(self.signal()), rnd)
@@ -211,7 +211,7 @@ class ExtendedSourceFlux:
         if not self.silent:
             print("")
 
-        return np.sum(result, axis=0) * self.year_seconds * self.value
+        return np.sum(result, axis=0) * self.year_seconds * self.value * self.lg_e_border
 
     def background(self):
         result = np.zeros([self.ext_source.s_num, self.telescope.energy.size])
@@ -233,7 +233,7 @@ class ExtendedSourceFlux:
         if not self.silent:
             print("")
 
-        return np.sum(result, axis=0) * self.year_seconds * self.value
+        return np.sum(result, axis=0) * self.year_seconds * self.value * self.lg_e_border
 
     def total_signal(self, rnd: int = 2):
         return np.round(np.sum(self.signal()), rnd)
