@@ -1,7 +1,7 @@
 # Baikal Neutrino Registration Rate project
 Author: Maksim Kleimenov
 
-Last update: 06/24
+Last update: 07/24
 
 ## Brief description
 
@@ -19,5 +19,4 @@ The most important files in *src/tests* folder are:
 * *point_like_source_total.py* which calculates total registration rates (events / year)
 * *extended_source_plot.py* which uses the implemented classes to plot an expected registration rate spectrum for an extended source (galactic ridge)
 * *extended_source_total.py* which calculates total flux from the extended source
-
-**... to be continued ...**
+* *full_sky_bg_test.py* which calculates the expected number of events from atmospheric and astrophysical neutrinos from the whole sky
