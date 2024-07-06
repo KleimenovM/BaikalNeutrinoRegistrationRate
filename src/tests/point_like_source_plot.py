@@ -1,6 +1,6 @@
 # Evaluates average high-energy neutrino spectral attenuation
 # for specific sources listed in "data/sources_table.csv"
-from src.atmosphere import Atmosphere
+from src.background import Atmosphere
 from src.root_plotter import RootPlotter
 from src.single_source_flux import PointSourceFlux
 from src.source import get_sources
@@ -68,4 +68,4 @@ def point_like_source_plot(if_bg: bool = False,
 
 
 if __name__ == '__main__':
-    point_like_source_plot(if_bg=True, source_number=11, angular_resolution=1)
+    point_like_source_plot(if_bg=True, source_number=0, angular_resolution=1)

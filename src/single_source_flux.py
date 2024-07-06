@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.atmosphere import Atmosphere
+from src.background import Background, Atmosphere, AstrophysicalBackground
 from src.single_theta_flux import SingleThetaFlux
 from src.source import Source
 from src.source_extended import ExtendedSource
@@ -11,6 +11,7 @@ from src.transmission_function import TransmissionFunction
 class BasicPointFlux:
     def __init__(self, telescope: Telescope, flux_on_energy_function,
                  tf: TransmissionFunction, atmosphere: Atmosphere,
+                 astro: AstrophysicalBackground,
                  declination: float = 0.0, right_ascension: float = 0.0,
                  latitude: float = .0, longitude: float = .0,
                  area: float = 1.0, angular_precision: int = 180,
@@ -43,6 +44,8 @@ class BasicPointFlux:
 
         # atmospheric neutrinos
         self.atmosphere = atmosphere
+        # astrophysical neutrinos
+        self.astro = astro
 
     def get_signal(self):
         ref_initial_flux = self.flux_on_energy(self.telescope.energy,
@@ -66,13 +69,13 @@ class BasicPointFlux:
 
         return np.mean(total_flux, axis=0) * self.de
 
-    def get_background(self):
+    def get_background(self, bg_type: Background):
 
         total_flux = np.zeros([self.angular_precision, self.telescope.energy.size])
 
         for i, z_i in enumerate(self.zenith_angles):
-            ref_initial_flux_i = self.atmosphere.flux(self.telescope.lg_energy, z_i) * self.area
-            initial_flux_i = self.atmosphere.flux(self.tf.lg_energy, z_i) * self.area
+            ref_initial_flux_i = bg_type.flux(self.telescope.lg_energy, z_i) * self.area
+            initial_flux_i = bg_type.flux(self.tf.lg_energy, z_i) * self.area
 
             stf = SingleThetaFlux(initial_flux=initial_flux_i,
                                   zenith=z_i,
@@ -85,11 +88,18 @@ class BasicPointFlux:
 
         return np.mean(total_flux, axis=0) * self.de
 
+    def get_atmospheric_background(self):
+        return self.get_background(bg_type=self.atmosphere)
+
+    def get_astrophysical_background(self):
+        return self.get_background(bg_type=self.astro)
+
 
 class PointSourceFlux:
     def __init__(self, telescope: Telescope, source: Source,
                  tf: TransmissionFunction = None,
                  atm: Atmosphere = None,
+                 astro: AstrophysicalBackground = None,
                  angular_resolution=1.0, angular_precision: int = 180,
                  value: float = 1.0, nuFate_method: int = 1,
                  no_attenuation_brd: float = 1.0, spectrum_brd: float = -1.0,
@@ -103,7 +113,10 @@ class PointSourceFlux:
         if atm is None:
             atm = Atmosphere()
 
-        self.bpf = BasicPointFlux(telescope=telescope, tf=tf, atmosphere=atm,
+        if astro is None:
+            astro = AstrophysicalBackground()
+
+        self.bpf = BasicPointFlux(telescope=telescope, tf=tf, atmosphere=atm, astro=astro,
                                   flux_on_energy_function=source.flux_on_energy_function,
                                   declination=source.delta, right_ascension=source.ra,
                                   area=area, angular_precision=angular_precision,
@@ -124,7 +137,7 @@ class PointSourceFlux:
         return signal * self.year_seconds * self.value * self.lg_e_border
 
     def background(self):
-        bg = self.bpf.get_background()
+        bg = self.bpf.get_atmospheric_background() + self.bpf.get_astrophysical_background()
         return bg * self.year_seconds * self.value * self.lg_e_border
 
     def total_signal(self, rnd: int = 2):
@@ -137,6 +150,7 @@ class PointSourceFlux:
 class ExtendedSourceFlux:
     def __init__(self, telescope: Telescope, ext_source: ExtendedSource,
                  tf: TransmissionFunction = None, atm: Atmosphere = None,
+                 astro: AstrophysicalBackground = None,
                  angular_precision: int = 180,
                  value: float = 1.0, nuFate_method: int = 1,
                  no_attenuation_brd: float = 1.0, spectrum_brd: float = -1.0,
@@ -150,13 +164,12 @@ class ExtendedSourceFlux:
 
         if tf is None:
             self.tf = TransmissionFunction(nuFate_method=nuFate_method)
-        else:
-            self.tf = tf
 
         if atm is None:
             self.atm = Atmosphere()
-        else:
-            self.atm = atm
+
+        if astro is None:
+            self.astro = AstrophysicalBackground()
 
         self.silent: bool = False
 
@@ -184,7 +197,7 @@ class ExtendedSourceFlux:
         # area setting
         area_ij = self.areas[i_x, i_y]
 
-        return BasicPointFlux(telescope=self.telescope, tf=self.tf, atmosphere=self.atm,
+        return BasicPointFlux(telescope=self.telescope, tf=self.tf, atmosphere=self.atm, astro=self.astro,
                               flux_on_energy_function=self.ext_source.flux_on_energy_function,
                               declination=dec_i, right_ascension=ra_i,
                               latitude=b_i, longitude=ll_i,
@@ -213,7 +226,7 @@ class ExtendedSourceFlux:
 
         return np.sum(result, axis=0) * self.year_seconds * self.value * self.lg_e_border
 
-    def background(self):
+    def background(self, if_atm: bool = True, if_astro: bool = True):
         result = np.zeros([self.ext_source.s_num, self.telescope.energy.size])
 
         if not self.silent:
@@ -228,7 +241,7 @@ class ExtendedSourceFlux:
 
                 bpf = self.set_bpf(i_x, i_y)
 
-                result[i] = bpf.get_background()
+                result[i] = bpf.get_atmospheric_background() * if_atm + bpf.get_astrophysical_background() * if_astro
 
         if not self.silent:
             print("")

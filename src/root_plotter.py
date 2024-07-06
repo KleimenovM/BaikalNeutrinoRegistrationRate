@@ -85,7 +85,7 @@ class RootPlotter:
         hist.SetLineColor(self.colors[self.index])
 
         hist.SetFillStyle(self.fill[self.index])
-        hist.SetFillColor(self.colors[self.index])
+        hist.SetFillColorAlpha(self.colors[self.index], .9)
 
         self.hists.append(hist)
         self.names.append(title)
@@ -113,7 +113,7 @@ class RootPlotter:
     def set_color_palette(self):
         if self.if_bg:
             sh = 1
-            self.fill = [4000, 3654, 4000, 3645, 4000, 3001]
+            self.fill = [0, 3554, 0, 3545, 0, 3002]
             self.colors = [602 + sh, 602, 633 + sh, 633, 419 + sh, 419]
         return
 
@@ -140,7 +140,7 @@ class RootPlotter:
             if not self.if_narrow:
                 text = self.add_text(self.fs, align_left=True)
                 text.SetTextColor(self.colors[i])
-                text.DrawLatexNDC(.3, .985 - .050 * i * (1 - 0.5 * self.if_bg), self.names[i])
+                text.DrawLatexNDC(.35, .985 - .050 * i * (1 - 0.5 * self.if_bg), self.names[i])
 
         text = self.add_text(self.fs + 2, align_left=False)
         text.DrawLatexNDC(.15, .95, self.title)

@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.atmosphere import Atmosphere
+from src.background import Atmosphere, AstrophysicalBackground
 from hammer_aitoff import plot_galactic_plane, plot_the_sources, plot_grid
-from point_like_source import one_telescope_background_cycle
+from src.single_source_flux import BasicPointFlux, PointSourceFlux
 from src.source import Source
 from src.telescope import RootTelescopeConstructor
 from src.transmission_function import TransmissionFunction
@@ -52,7 +52,7 @@ def organize_sources(num_pts, random: bool = True, if_plot: bool = False):
 
 
 def full_sky():
-    n_s = 5000
+    n_s = 10000
     angular_resolution = (4 / n_s) ** 0.5 * 180 / np.pi
     sources = organize_sources(n_s, random=True)
 
@@ -67,6 +67,8 @@ def full_sky():
 
     atm = Atmosphere()
 
+    astro = AstrophysicalBackground()
+
     # Earth transmission function calculated with nuFate
     tf = TransmissionFunction(nuFate_method=1)
 
@@ -78,23 +80,23 @@ def full_sky():
         if i_s % 1000 == 0:
             print(i_s)
 
-        t_res += np.sum(one_telescope_background_cycle(source=s, tf=tf, telescope=baikal_trigger,
-                                                       atm=atm, angular_resolution=angular_resolution,
-                                                       angular_precision=2) * value_t)
+        t_res += PointSourceFlux(source=s, tf=tf, telescope=baikal_trigger,
+                                 atm=atm, astro=astro, angular_resolution=angular_resolution,
+                                 angular_precision=2).total_background() * value_t
 
-        r_res += np.sum(one_telescope_background_cycle(source=s, tf=tf, telescope=baikal_reco,
-                                                       atm=atm, angular_resolution=angular_resolution,
-                                                       angular_precision=2) * value_r)
+        r_res += PointSourceFlux(source=s, tf=tf, telescope=baikal_reco,
+                                 atm=atm, astro=astro, angular_resolution=angular_resolution,
+                                 angular_precision=2).total_background() * value_r
 
-        c1_res += np.sum(one_telescope_background_cycle(source=s, tf=tf, telescope=baikal_std_cuts2,
-                                                        atm=atm, angular_resolution=angular_resolution,
-                                                        angular_precision=2) * value_c)
+        c1_res += PointSourceFlux(source=s, tf=tf, telescope=baikal_std_cuts2,
+                                  atm=atm, astro=astro, angular_resolution=angular_resolution,
+                                  angular_precision=2).total_background() * value_c
 
-        c_res += np.sum(one_telescope_background_cycle(source=s, tf=tf, telescope=baikal_std_cuts,
-                                                       atm=atm, angular_resolution=angular_resolution,
-                                                       angular_precision=2) * value_c)
+        c_res += PointSourceFlux(source=s, tf=tf, telescope=baikal_std_cuts,
+                                 atm=atm, astro=astro, angular_resolution=angular_resolution,
+                                 angular_precision=2).total_background() * value_c
 
-    print(t_res, r_res, c1_res, c_res)
+    print(f"Result: trigger {t_res}, reconstruction {r_res}, std_cuts {c1_res}, BDT_cuts {c_res}")
 
     return
 

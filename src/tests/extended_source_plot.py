@@ -59,4 +59,4 @@ def extended_source_plot(if_bg: bool = False,
 
 
 if __name__ == '__main__':
-    extended_source_plot(if_bg=True, num=20)
+    extended_source_plot(if_bg=True, num=200)

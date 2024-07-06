@@ -3,8 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from src.atmosphere import Atmosphere
-from src.root_plotter import RootPlotter
+from src.background import Atmosphere, AstrophysicalBackground
 from src.single_source_flux import PointSourceFlux
 from src.source import get_sources
 from src.telescope import RootTelescopeConstructor
@@ -25,6 +24,8 @@ def point_like_source_plot(if_bg: bool = False,
 
     # atmoshperic flux initialization
     atm = Atmosphere()
+    # astrophysical bg flux initialization
+    astro = AstrophysicalBackground()
 
     # zenith-angle-dependent version
     baikal_trigger = RootTelescopeConstructor(telescope_name, "hnu_trigger").get()
@@ -39,7 +40,7 @@ def point_like_source_plot(if_bg: bool = False,
         source_numbers = [x for x in range(12)]
 
     if if_bg:
-        print(r'Sources & RR, trig & BG, trig & RR, reco & BG, reco & RR, cuts & BG, cuts \\')
+        print(r'Sources & RR, trig & BG, trig & RR, reco & BG, reco & RR, cuts & BG, cuts & RR/BG \\')
 
     rnd_cuts = 3
 
@@ -66,7 +67,7 @@ def point_like_source_plot(if_bg: bool = False,
             r_t, r_t_bg = ssf_trigger.total_signal(), ssf_trigger.total_background()
             r_r, r_r_bg = ssf_reco.total_signal(), ssf_reco.total_background()
             r_c, r_c_bg = ssf_cuts.total_signal(rnd_cuts), ssf_cuts.total_background(rnd_cuts)
-            print(f'{source.name} & {r_t} & {r_t_bg} & {r_r} & {r_r_bg} & {r_c} & {r_c_bg} ' + r'\\')
+            print(f'{source.name} & {r_t} & {r_t_bg} & {r_r} & {r_r_bg} & {r_c} & {r_c_bg} & {np.round(r_c/r_c_bg, 2)}' + r'\\')
             results[i] = np.array([r_t, r_t_bg, r_r, r_r_bg, r_c, r_c_bg])
             names.append(source.name)
         else:
@@ -86,5 +87,5 @@ def point_like_source_plot(if_bg: bool = False,
 if __name__ == '__main__':
     point_like_source_plot(if_bg=True,
                            source_numbers=None,
-                           lg_e_brd=3,
+                           lg_e_brd=0,
                            angular_resolution=1)

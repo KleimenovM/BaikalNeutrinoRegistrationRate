@@ -1,13 +1,10 @@
 # Evaluates average high-energy neutrino spectral attenuation
 # for specific sources listed in "data/sources_table.csv"
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 
-from src.atmosphere import Atmosphere
-from src.single_theta_flux import SingleThetaFlux
-from src.source import get_sources, Source
-from src.telescope import Telescope, RootTelescopeConstructor
+from src.background import Atmosphere
+from src.source import get_sources
+from src.telescope import RootTelescopeConstructor
 from src.transmission_function import TransmissionFunction
 
 
