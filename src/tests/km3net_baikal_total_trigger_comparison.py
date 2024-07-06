@@ -3,6 +3,7 @@
 import numpy as np
 
 from src.background import Atmosphere
+from src.single_source_flux import PointSourceFlux
 from src.source import get_sources
 from src.telescope import RootTelescopeConstructor
 from src.transmission_function import TransmissionFunction
@@ -14,7 +15,7 @@ def main(if_sum: bool = False,
     # sources from file "source_table.csv" -- potential high-energy neutrino sources
     if source_numbers is None:
         source_numbers = [x for x in range(12)]
-    sources = get_sources("src/data/source_table.csv")
+    sources = get_sources("../data/source_table.csv")
 
     baikal_trigger = RootTelescopeConstructor("baikal_2023_new", "hnu_trigger").get()
     km3net_trigger = RootTelescopeConstructor("km3net_2019_trigger", "hnu_trigger").get()
@@ -39,12 +40,15 @@ def main(if_sum: bool = False,
     for i, sn in enumerate(source_numbers):
         source = sources[sn]  # take one source from the list
 
-        r_t, r_t_bg = get_signal_and_background(source=source, tf=tf, atm=ac, telescope=baikal_trigger,
-                                                angular_resolution=1, value=value_t, lg_e_brd=lg_e_brd,
-                                                rnd=2, if_sum=if_sum)
-        k_t, k_t_bg = get_signal_and_background(source=source, tf=tf, atm=ac, telescope=km3net_trigger,
-                                                angular_resolution=1, value=value_k, lg_e_brd=lg_e_brd,
-                                                rnd=2, if_sum=if_sum)
+        p1 = PointSourceFlux(source=source, tf=tf, atm=ac, telescope=baikal_trigger,
+                             angular_resolution=1, value=value_t)
+
+        r_t, r_t_bg = p1.total_signal(rnd=2), p1.total_background(rnd=2)
+
+        p2 = PointSourceFlux(source=source, tf=tf, atm=ac, telescope=km3net_trigger,
+                             angular_resolution=1, value=value_k)
+
+        k_t, k_t_bg = p2.total_signal(rnd=2), p2.total_background(rnd=2)
 
         # just print the total registration rates
         print(f'{source.name} & {r_t} & {k_t}' + r' \\')

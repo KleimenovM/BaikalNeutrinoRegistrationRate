@@ -1,0 +1,4 @@
+km3net_2019
+36,16
+
+0.15	km3Net_trigger.root

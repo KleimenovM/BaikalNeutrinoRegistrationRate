@@ -1,0 +1,4 @@
+baikal_2021
+51,47
+
+-0.5	eff_area.root
