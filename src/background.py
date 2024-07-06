@@ -6,11 +6,25 @@ from scipy.interpolate import RectBivariateSpline
 
 
 class Background(abc.ABC):
+    """
+    An abstract class for background calculation
+    """
     @abc.abstractmethod
-    def flux(self, lg_energy, zenith_angle): return .0
+    def flux(self, lg_energy, zenith_angle):
+        """
+        Abstract method for background class
+        :param lg_energy: (np.ndarray) available energies, lg(E/GeV)
+        :param zenith_angle: (float) given zenith angle (rad)
+        :return: (np.array) flux distribution for the given zenith angle and energy range
+        """
+        return .0
 
 
 class AstrophysicalBackground(Background):
+    """
+    Based on various measured results (see Troitsky, 2023 arXiv:2112.09611)
+    allows to calculate
+    """
     def __init__(self, method: str = "nu_mu 2019"):
         # for clarification see table 3 of arXiv:2112.09611
         names_dict = {"HESE 2020": 0, "IceCube Cascades 2020": 1, "MESE 2014": 2, "Inelasticity 2018": 3,
@@ -30,6 +44,12 @@ class AstrophysicalBackground(Background):
         return self.f0 * 10 ** (-self.gamma * (lg_energy - 5))
 
     def err_flux(self, lg_energy, *args):
+        """
+        Constructs the 1-sigma error boundary around the measured astrophysical flux
+        :param lg_energy: (np.ndarray) lg(E/GeV)
+        :param args: redundant parameters
+        :return: (2 np.ndarrays) lower and higher boundaries
+        """
         h1 = (self.f0 + self.f0_err[0]) * 10 ** (-(self.gamma + self.gamma_err[1]) * (lg_energy - 5))
         h2 = (self.f0 + self.f0_err[1]) * 10 ** (-(self.gamma + self.gamma_err[0]) * (lg_energy - 5))
         h3 = (self.f0 + self.f0_err[1]) * 10 ** (-(self.gamma + self.gamma_err[1]) * (lg_energy - 5))
