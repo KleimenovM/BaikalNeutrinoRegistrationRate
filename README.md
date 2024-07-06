@@ -20,3 +20,7 @@ The most important files in *src/tests* folder are:
 * *extended_source_plot.py* which uses the implemented classes to plot an expected registration rate spectrum for an extended source (galactic ridge)
 * *extended_source_total.py* which calculates total flux from the extended source
 * *full_sky_bg_test.py* which calculates the expected number of events from atmospheric and astrophysical neutrinos from the whole sky
+
+**To use the program create a subdirectory "transmission_matrix" in "data" directory and run the file "transmission_calculation.py"**
+
+_for questions: e-mail kleimenov.maksim.i@gmail.com or Telegram @gospodin_huu_
