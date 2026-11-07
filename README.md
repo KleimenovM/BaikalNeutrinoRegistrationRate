@@ -1,7 +1,7 @@
 # Baikal Neutrino Registration Rate project
 Author: Maksim Kleimenov
 
-Last update: 07/24
+Last update: 07/24 (11/26 minor changes for functionality 'out of the box')
 
 ## Brief description
 
