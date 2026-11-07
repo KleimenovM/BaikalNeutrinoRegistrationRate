@@ -9,7 +9,7 @@ from src.telescope import RootTelescopeConstructor
 
 def icecube_test():
     lg_energy = np.linspace(0, 10, 1000)
-    zenith = np.linspace(np.pi/2+0.05, np.pi-1e-5, 900)
+    zenith = np.linspace(np.pi/2+1e-5, np.pi-1e-5, 900)
     zenith_scale = np.linspace(90, 180, 900)
     energy = 10**lg_energy
 
@@ -17,7 +17,7 @@ def icecube_test():
     res = np.zeros([900, 1000])
 
     for gamma in gammas:
-        telescope = RootTelescopeConstructor("baikal_bdt_mk", "hnu_trigger").get()
+        telescope = RootTelescopeConstructor("baikal_2021", "hnu").get()
 
         tf = TransmissionFunction(nuFate_method=1)
 
